@@ -1,13 +1,14 @@
 import { Application, Assets, Container, Ticker } from "pixi.js";
-import { WelcomeScene } from "./scenes";
+import { BackgroundScene, PlayScene } from "./scenes";
 import { manifest } from "./Manifest";
+import { Keyboard } from "./Keyboard";
 
 export class Manager {
     private constructor() { }
 
     // Safely store variables for our game
     private static app: Application;
-    private static currentScene: IScene;
+    private static currentScenes: Array<IScene> = [];
 
     // Width and Height are read-only after creation (for now)
     private static _width: number;
@@ -55,32 +56,41 @@ export class Manager {
         window.addEventListener("resize", Manager.resize)
         Manager.resize()
 
-        Manager.changeScene(new WelcomeScene())
+        Keyboard.initilize()
+        Manager.changeScene([new BackgroundScene(), new PlayScene()])
     }
 
     // Call this function when you want to go to a new scene
-    public static async changeScene(newScene: IScene) {
+    public static async changeScene(newScenes: IScene[]) {
         await Manager.initializeAssetsPromise
         // Remove and destroy old scene... if we had one..
-        if (Manager.currentScene) {
-            Manager.app.stage.removeChild(Manager.currentScene);
-            Manager.currentScene.destroy();
+        if (Manager.currentScenes.length) {
+            for (const currentScene of Manager.currentScenes) {
+                Manager.app.stage.removeChild(currentScene);
+                currentScene.destroy();
+            }
         }
 
-        await Assets.loadBundle(newScene.assetBundles)
-        newScene.constructorWithAssets()
+        Manager.currentScenes = []
+        for (const newScene of newScenes) {
+            await Assets.loadBundle(newScene.assetBundles)
+            newScene.constructorWithAssets()
 
-        // Add the new one
-        Manager.currentScene = newScene;
-        Manager.app.stage.addChild(Manager.currentScene);
+            // Add the new one
+            Manager.currentScenes.push(newScene);
+            Manager.app.stage.addChild(Manager.currentScenes[Manager.currentScenes.length - 1]);
+        }
     }
 
     // This update will be called by a pixi ticker and tell the scene that a tick happened
     private static update(ticker: Ticker): void {
-        if (Manager.currentScene) {
-            Manager.currentScene.update(ticker);
+        if (Manager.currentScenes.length) {
+            for (const currentScene of Manager.currentScenes) {
+                currentScene.update(ticker);
+            }
         }
 
+        Keyboard.reset()
     }
 
     private static resize() {

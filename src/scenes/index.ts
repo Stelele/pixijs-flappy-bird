@@ -1,1 +1,2 @@
-export * from "./WelcomeScene"
+export * from "./BackgroundScene"
+export * from "./PlayScene"
