@@ -2,7 +2,7 @@ import { Graphics, GraphicsContext, Texture, Ticker } from "pixi.js";
 import { IGraphics, Manager } from "../Manager";
 
 export class GroundGraphic extends Graphics implements IGraphics {
-    private readonly SCROLL_SPEED = 0.1
+    private readonly SCROLL_SPEED = 0.06
     constructor() {
         const texture = Texture.from("ground")
         const context = new GraphicsContext()

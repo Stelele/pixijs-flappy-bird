@@ -1,6 +1,7 @@
 import { Container, Sprite, Texture, Ticker } from "pixi.js";
 import { IGraphics, Manager } from "../Manager";
 import { randomInt } from "../helpers";
+import { BirdSprite } from "./BirdSprite";
 
 export class PipeSprite implements IGraphics {
     private static pipeTexture: Texture
@@ -12,6 +13,9 @@ export class PipeSprite implements IGraphics {
     private lowerPipe: Sprite
 
     public shouldDestroy = false
+    public hasScored = false
+    public get x() { return this.upperPipe.x }
+    public get width() { return this.upperPipe.width }
 
     constructor(container: Container) {
         if (!PipeSprite.pipeTexture) {
@@ -49,4 +53,23 @@ export class PipeSprite implements IGraphics {
         this.lowerPipe.destroy()
     }
 
+    public collides(bird: BirdSprite) {
+        return this.isUpperCollision(bird) || this.isLowerCollision(bird)
+    }
+
+    private isUpperCollision(bird: BirdSprite) {
+        if (this.upperPipe.x > bird.x + bird.width - 13) return false
+        if (bird.x + 5 > this.upperPipe.x + this.upperPipe.width) return false
+        if (this.upperPipe.y < bird.y + 5) return false
+        if (bird.y + 5 < this.upperPipe.y - this.upperPipe.height) return false
+        return true
+    }
+
+    private isLowerCollision(bird: BirdSprite) {
+        if (this.lowerPipe.x > bird.x + bird.width - 13) return false
+        if (bird.x + 5 > this.lowerPipe.x + this.lowerPipe.width) return false
+        if (this.lowerPipe.y > bird.y + bird.height - 5) return false
+        if (bird.y - 5 > this.lowerPipe.y + this.lowerPipe.height) return false
+        return true
+    }
 }

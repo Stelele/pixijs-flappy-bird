@@ -1,2 +1,5 @@
 export * from "./BackgroundScene"
 export * from "./PlayScene"
+export * from "./TitleScene"
+export * from "./CountDownScene"
+export * from "./ScoreScene"

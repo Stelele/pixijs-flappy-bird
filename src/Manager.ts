@@ -1,14 +1,15 @@
 import { Application, Assets, Container, Ticker } from "pixi.js";
-import { BackgroundScene, PlayScene } from "./scenes";
 import { manifest } from "./Manifest";
 import { Keyboard } from "./Keyboard";
+import { StateMachine } from "./stateManagement";
+import { BackgroundScene } from "./scenes";
 
 export class Manager {
     private constructor() { }
 
     // Safely store variables for our game
     private static app: Application;
-    private static currentScenes: Array<IScene> = [];
+    private static currentScene: IScene;
 
     // Width and Height are read-only after creation (for now)
     private static _width: number;
@@ -24,6 +25,7 @@ export class Manager {
     }
 
     private static initializeAssetsPromise: Promise<unknown>;
+    private static backgroundScene: BackgroundScene
 
     // Use this function ONCE to start the entire machinery
     public static async initialize(width: number, height: number, background: number): Promise<void> {
@@ -50,47 +52,55 @@ export class Manager {
         // Initialize the assets and then start downloading the bundles in the background
         Manager.initializeAssetsPromise.then(() => Assets.backgroundLoadBundle(bundleNames));
 
+        await this.addBackgroundScene()
+
         // Add the ticker
-        Manager.app.ticker.add(Manager.update)
+        Manager.app.ticker.add(Manager.update.bind(this))
+
 
         window.addEventListener("resize", Manager.resize)
         Manager.resize()
 
         Keyboard.initilize()
-        Manager.changeScene([new BackgroundScene(), new PlayScene()])
+        StateMachine.change("title")
+    }
+
+    private static async addBackgroundScene() {
+        await Manager.initializeAssetsPromise
+        this.backgroundScene = new BackgroundScene()
+        await Assets.loadBundle(this.backgroundScene.assetBundles)
+        this.backgroundScene.constructorWithAssets()
+        Manager.app.stage.addChild(this.backgroundScene)
+        Manager.app.ticker.add(Manager.backgroundUpdate.bind(this))
     }
 
     // Call this function when you want to go to a new scene
-    public static async changeScene(newScenes: IScene[]) {
+    public static async changeScene(newScene: IScene) {
         await Manager.initializeAssetsPromise
         // Remove and destroy old scene... if we had one..
-        if (Manager.currentScenes.length) {
-            for (const currentScene of Manager.currentScenes) {
-                Manager.app.stage.removeChild(currentScene);
-                currentScene.destroy();
-            }
+        if (Manager.currentScene) {
+            Manager.app.stage.removeChild(Manager.currentScene);
+            Manager.currentScene.destroy();
         }
 
-        Manager.currentScenes = []
-        for (const newScene of newScenes) {
-            await Assets.loadBundle(newScene.assetBundles)
-            newScene.constructorWithAssets()
+        await Assets.loadBundle(newScene.assetBundles)
+        newScene.constructorWithAssets()
 
-            // Add the new one
-            Manager.currentScenes.push(newScene);
-            Manager.app.stage.addChild(Manager.currentScenes[Manager.currentScenes.length - 1]);
-        }
+        // Add the new one
+        Manager.currentScene = newScene;
+        Manager.app.stage.addChild(Manager.currentScene);
     }
 
     // This update will be called by a pixi ticker and tell the scene that a tick happened
     private static update(ticker: Ticker): void {
-        if (Manager.currentScenes.length) {
-            for (const currentScene of Manager.currentScenes) {
-                currentScene.update(ticker);
-            }
-        }
-
+        StateMachine.update(ticker)
         Keyboard.reset()
+    }
+
+    private static backgroundUpdate(ticker: Ticker) {
+        if (this.backgroundScene.assetsReady) {
+            this.backgroundScene.update(ticker)
+        }
     }
 
     private static resize() {
@@ -119,8 +129,10 @@ export class Manager {
 
 export interface IScene extends Container {
     assetBundles: string[]
+    assetsReady: boolean
     constructorWithAssets(): void
-    update(ticker: Ticker): void;
+    update(ticker: Ticker): void
+    destroyAssets(): void
 }
 
 export interface IGraphics {
