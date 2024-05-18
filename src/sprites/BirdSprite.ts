@@ -1,6 +1,6 @@
 import { Sprite, Texture, Ticker } from "pixi.js";
 import { IGraphics, Manager } from "../Manager";
-import { Keyboard } from "../Keyboard";
+import { InputManager } from "../InputManager";
 import { Sound } from "@pixi/sound";
 
 export class BirdSprite extends Sprite implements IGraphics {
@@ -19,7 +19,7 @@ export class BirdSprite extends Sprite implements IGraphics {
     update(ticker: Ticker): void {
         this.dy += this.GRAVITY * ticker.deltaMS
 
-        if (Keyboard.keysPressed[" "]) {
+        if (InputManager.keysPressed[" "]) {
             this.dy = -5
             this.jumpSound.play()
         }

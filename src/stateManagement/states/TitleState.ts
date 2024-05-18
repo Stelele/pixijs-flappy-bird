@@ -2,7 +2,7 @@ import { Ticker } from "pixi.js";
 import { IState } from "./BaseState";
 import { TitleScene } from "../../scenes";
 import { Manager } from "../../Manager";
-import { Keyboard } from "../../Keyboard";
+import { InputManager } from "../../InputManager";
 import { StateMachine } from "../StateMachine";
 
 export class TitleState implements IState {
@@ -21,7 +21,7 @@ export class TitleState implements IState {
         if (!this.titleScene.assetsReady) return
         this.titleScene.update(ticker)
 
-        if (Keyboard.keysPressed["Enter"]) {
+        if (InputManager.keysPressed["Enter"]) {
             StateMachine.change("count-down")
         }
 

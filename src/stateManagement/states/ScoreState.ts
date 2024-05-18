@@ -1,6 +1,6 @@
 import { Ticker } from "pixi.js";
 import { IState } from "./BaseState";
-import { Keyboard } from "../../Keyboard";
+import { InputManager } from "../../InputManager";
 import { StateMachine } from "../StateMachine";
 import { ScoreScene } from "../../scenes";
 import { Manager } from "../../Manager";
@@ -22,11 +22,11 @@ export class ScoreState implements IState {
             this.scoreScene.update(ticker)
         }
 
-        if (Keyboard.keysPressed["Enter"]) {
+        if (InputManager.keysPressed["Enter"]) {
             StateMachine.change("count-down")
         }
 
-        if (Keyboard.keysPressed["Escape"]) {
+        if (InputManager.keysPressed["Escape"]) {
             StateMachine.change("title")
         }
     }

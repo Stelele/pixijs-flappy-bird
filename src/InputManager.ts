@@ -1,13 +1,13 @@
-export class Keyboard {
+export class InputManager {
     private static _keysPressed: Record<string, boolean> = {}
 
     private constructor() { }
 
-    public static get keysPressed() { return Keyboard._keysPressed }
+    public static get keysPressed() { return InputManager._keysPressed }
 
     public static initilize() {
-        document.addEventListener("keydown", Keyboard.onKeyDown.bind(this))
-        document.addEventListener("keyup", Keyboard.onKeyUp.bind(this))
+        document.addEventListener("keydown", InputManager.onKeyDown.bind(this))
+        document.addEventListener("keyup", InputManager.onKeyUp.bind(this))
     }
 
     private static onKeyDown(e: KeyboardEvent) {

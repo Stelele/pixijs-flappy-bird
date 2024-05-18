@@ -1,6 +1,6 @@
 import { Application, Assets, Container, Ticker } from "pixi.js";
 import { manifest } from "./Manifest";
-import { Keyboard } from "./Keyboard";
+import { InputManager } from "./InputManager";
 import { StateMachine } from "./stateManagement";
 import { BackgroundScene } from "./scenes";
 
@@ -61,7 +61,7 @@ export class Manager {
         window.addEventListener("resize", Manager.resize)
         Manager.resize()
 
-        Keyboard.initilize()
+        InputManager.initilize()
         StateMachine.change("title")
     }
 
@@ -94,7 +94,7 @@ export class Manager {
     // This update will be called by a pixi ticker and tell the scene that a tick happened
     private static update(ticker: Ticker): void {
         StateMachine.update(ticker)
-        Keyboard.reset()
+        InputManager.reset()
     }
 
     private static backgroundUpdate(ticker: Ticker) {
